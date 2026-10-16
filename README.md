@@ -1,6 +1,12 @@
 # FATE-X  
 The **FATE-X (Formal Algebra Theorem Evaluation - Extra Hard)** benchmark.  
 
+## Statement corrections
+
+Corrections to 13 statements are documented in [STATEMENT_CORRECTIONS.md](STATEMENT_CORRECTIONS.md),
+with regression checks and synchronized Lean/JSON inputs. For these problems,
+use the Lean files or JSON; the existing PDF contains the original statements.
+
 ## Overview  
 This benchmark contains 100 extremely challenging abstract algebra and commutative algebra exercises collected from:  
 - Undergraduate and graduate textbooks,  
