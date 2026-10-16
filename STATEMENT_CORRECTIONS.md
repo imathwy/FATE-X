@@ -2,8 +2,9 @@
 
 This change addresses the twelve problems listed in [issue #1](https://github.com/frenzymath/FATE-X/issues/1)
 and the grading defect in [issue #2](https://github.com/frenzymath/FATE-X/issues/2).
-It also includes subsequent review findings in problems 70, 74, and 86,
-bringing the number of corrected problems to sixteen.
+Together with the review findings in problems 70, 74, and 86, these make up the
+initial sixteen-problem correction set. The later metadata/presentation review
+and additional interface corrections are documented in [METADATA_REVIEW.md](METADATA_REVIEW.md).
 The Lean and JSON statements are synchronized. Each benchmark task still has exactly
 one intentional proof hole; the regression proofs are separate and do not use task theorems.
 
@@ -116,7 +117,27 @@ mathematical argument, not a claim of an additional Lean proof.
   from poles. It does not add a projective-line treatment of intermediate infinity
   points. The numerator/denominator degree hypothesis is unchanged.
 
-## Validation
+## Follow-up: declarations, minor statement details and subject metadata
+
+The subsequent [metadata review](METADATA_REVIEW.md) fixes the stale JSON helper
+definitions for problems 15 and 45, missing helpers (including 76 and 94), and
+the misplaced Stacks attribute in problem 79. Auxiliary declarations are now
+extracted and checked against Lean source for all 100 problems.
+
+It also addresses the additional presentation and scope observations, including
+the missing `IsDomain` conjunct in 10, the explicit chain bound in 76, and the
+positive variable-count witness in 90. Names, spelling and redundant hypotheses
+are reviewed separately from the original sixteen mathematical corrections.
+Problems 35 and 46 have independent library proofs in `tests/ReviewChecks.lean`;
+the custom CM-module predicate in 72 now includes finite generation, with the
+scope change and primary-source definition explicitly documented.
+
+All 100 subject assignments are recorded in [TOPIC_INDEX.md](TOPIC_INDEX.md),
+generated from the explicit mapping in `scripts/problem_tags.py`. They describe
+primary mathematical subjects, not benchmark difficulty. The full per-problem
+review and validation limits are in `METADATA_REVIEW.md`.
+
+## Current validation
 
 With Lean 4.28.0 and the dependencies pinned in `lake-manifest.json` available:
 
@@ -127,7 +148,9 @@ python3 tests/check_statements.py
 The checker compares all 100 JSON formal statements with the Lean files, verifies
 one benchmark proof hole per problem, elaborates all 100 modules and their
 aggregate, then checks `tests/StatementCorrections.lean` and the standalone
-`tests/Problem86Counterexample.lean` refutation. It uses at most three
+`tests/Problem86Counterexample.lean` refutation, together with `tests/ReviewChecks.lean`.
+It checks JSON auxiliary declarations, theorem docstrings and tags as well as
+formal statements, and runs metadata mutation regressions. It uses at most three
 concurrent module compilations and writes all logs under `.work/statement-checks/`.
 
 The regression file checks the repaired interfaces with independent proofs and
@@ -135,7 +158,7 @@ prints their axiom dependencies. The checker rejects a `sorryAx` dependency in
 those regression proofs. Importing a task module does not count as proving that task.
 
 Compilation verifies that the statements are well formed. It does not certify
-the full mathematical theorem in each of the sixteen benchmark problems.
+the full mathematical theorem in each benchmark problem.
 
 The existing PDF is retained as the original edition; the corrected Lean and JSON
 are the current statement sources for the changed problems.

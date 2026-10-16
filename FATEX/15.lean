@@ -46,20 +46,20 @@ Let $p,q,r$ be three distinct prime numbers, $t$ a positive integer. Let $G$ be 
 $H$ a normal subgroup of $G$ such that the cardinality of $G/H$ is $r^{t}$.
 Suppose that there exists a composition series
 \[
-\{e\} = H_0 \triangleleft H_1 \triangleleft \cdots \triangleleft H_n = H,
+\{e\} = H_0 \triangleleft H_1 \triangleleft H_2 = H,
 \]
-of $H$ that satisfies $n=2$, $H_1/H_0 = \mathbb{Z}/p\mathbb{Z}$,
-$H_2/H_1 = \mathbb{Z}/q\mathbb{Z}$. Further suppose that there exists a composition series
+of $H$ with $H_1/H_0 \cong \mathbb{Z}/p\mathbb{Z}$ and
+$H_2/H_1 \cong \mathbb{Z}/q\mathbb{Z}$. Further suppose that there exists a composition series
 \[
 \{e\} = G_0 \triangleleft G_1 \triangleleft \cdots \triangleleft G_n = G,
 \]
 and positive integers $i < j\leq n$ such that $G_{i}/G_{i-1} = \mathbb{Z}/q\mathbb{Z}$,
 $G_{j}/G_{j-1} = \mathbb{Z}/p\mathbb{Z}$. Show that there exists a composition series
 \[
-\{e\} = H_0 \triangleleft H_1 \triangleleft \cdots \triangleleft H_n = H,
+\{e\} = H'_0 \triangleleft H'_1 \triangleleft H'_2 = H,
 \]
-of $H$ that satisfies $n=2$, $H_1/H_0 = \mathbb{Z}/q\mathbb{Z}$,
-$H_2/H_1 = \mathbb{Z}/p\mathbb{Z}$.
+of $H$ with $H'_1/H'_0 \cong \mathbb{Z}/q\mathbb{Z}$ and
+$H'_2/H'_1 \cong \mathbb{Z}/p\mathbb{Z}$.
 -/
 theorem exists_swap_stepwiseQuotient {p q r t : ℕ} (hp : p.Prime) (hq : q.Prime) (hr : r.Prime)
     (hpq : p ≠ q) (hpr : p ≠ r) (hqr : q ≠ r)

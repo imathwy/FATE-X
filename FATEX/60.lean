@@ -6,7 +6,7 @@ open Problem60
 
 /--
 For a Noetherian domain \( R \), we say that an ideal \( I \subset R \) is invertible if
-it is it not the zero ideal and there exists an ideal \( N \) such that \( N \cdot I \) is principal
+it is not the zero ideal and there exists an ideal \( N \) such that \( N \cdot I \) is principal
 and \( N \) is not the zero ideal.
 -/
 def Ideal.Invertible {R : Type} [CommRing R] [IsDomain R] (I : Ideal R) : Prop :=

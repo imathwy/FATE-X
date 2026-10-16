@@ -6,6 +6,7 @@ in benchmark tasks are intentional; the separate regression proofs must be close
 All generated files are kept under .lake/ and .work/ in this checkout.
 """
 import concurrent.futures
+import argparse
 import datetime
 import hashlib
 import json
@@ -17,6 +18,9 @@ import sys
 import time
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from scripts.dataset_metadata import check_entry
+from scripts.problem_tags import problem_tags
 WORK = ROOT / ".work" / "statement-checks"
 LIB = ROOT / ".lake" / "build" / "lib" / "lean"
 
@@ -24,11 +28,12 @@ LIB = ROOT / ".lake" / "build" / "lib" / "lean"
 def check_dataset():
     entries = json.loads((ROOT / "FATE-X.json").read_text())
     assert [entry["id"] for entry in entries] == list(range(1, 101))
+    tags = problem_tags()
     for entry in entries:
         source = (ROOT / "FATEX" / f"{entry['id']}.lean").read_text()
-        assert entry["formal_statement"].rstrip() == source.rstrip(), entry["id"]
-        assert len(re.findall(r"\bsorry\b", source)) == 1, entry["id"]
-    print("All 100 JSON formal statements match their Lean files; one task proof hole each.", flush=True)
+        check_entry(entry, source)
+        assert entry["tag"] == tags[entry["id"]], f"tag mismatch: {entry['id']}"
+    print("All 100 JSON formal statements, declarations, theorem docstrings and tags checked; one task proof hole each.", flush=True)
 
 
 def check_file(relative, output=None):
@@ -55,12 +60,18 @@ def check_file(relative, output=None):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--dataset-only", action="store_true", help="Check all JSON fields and metadata regressions without running Lean")
+    args = parser.parse_args()
     for directory in [WORK, WORK / "tmp", WORK / "cache", LIB / "FATEX"]:
         directory.mkdir(parents=True, exist_ok=True)
     ENV = dict(os.environ)
     ENV.update({"TMPDIR": str(WORK / "tmp"), "TMP": str(WORK / "tmp"),
                 "TEMP": str(WORK / "tmp"), "XDG_CACHE_HOME": str(WORK / "cache")})
     check_dataset()
+    subprocess.run([sys.executable, "tests/test_dataset_metadata.py"], cwd=ROOT, env=ENV, check=True)
+    if args.dataset_only:
+        sys.exit(0)
     ENV["LEAN_PATH"] = subprocess.check_output(
         ["lake", "env", "printenv", "LEAN_PATH"], cwd=ROOT, env=ENV, text=True).strip()
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
@@ -73,13 +84,19 @@ if __name__ == "__main__":
     if passed:
         report["aggregate"] = check_file("FATEX.lean", LIB / "FATEX.olean")
         report["regressions"] = check_file("tests/StatementCorrections.lean")
+        report["review_checks"] = check_file("tests/ReviewChecks.lean")
         report["original86_refutation"] = check_file("tests/Problem86Counterexample.lean")
         passed = (report["aggregate"]["returncode"] == 0 and report["regressions"]["returncode"] == 0
+                  and report["review_checks"]["returncode"] == 0
                   and report["original86_refutation"]["returncode"] == 0)
         if passed:
             output = (ROOT / report["regressions"]["log"]).read_text()
             refutation = (ROOT / report["original86_refutation"]["log"]).read_text()
-            passed = "sorryAx" not in output and "sorryAx" not in refutation
+            review = (ROOT / report["review_checks"]["log"]).read_text()
+            passed = "sorryAx" not in output and "sorryAx" not in refutation and "sorryAx" not in review
             report["regression_proofs_closed"] = passed
+            report["regression_axiom_reports"] = output.count("depends on axioms:")
+            report["review_axiom_reports"] = review.count("depends on axioms:")
+            report["original86_refutation_closed"] = "sorryAx" not in refutation
     (WORK / "results.json").write_text(json.dumps(report, indent=2) + "\n")
     sys.exit(0 if passed else 1)
