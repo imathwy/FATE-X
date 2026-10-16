@@ -2,6 +2,8 @@
 
 This change addresses the twelve problems listed in [issue #1](https://github.com/frenzymath/FATE-X/issues/1)
 and the grading defect in [issue #2](https://github.com/frenzymath/FATE-X/issues/2).
+It also includes subsequent review findings in problems 70, 74, and 86,
+bringing the number of corrected problems to sixteen.
 The Lean and JSON statements are synchronized. Each benchmark task still has exactly
 one intentional proof hole; the regression proofs are separate and do not use task theorems.
 
@@ -18,8 +20,11 @@ one intentional proof hole; the regression proofs are separate and do not use ta
 | 59 | State the finite value group explicitly. | The finite values on nonzero field elements are exactly `m + n * α`, with integer coefficients of either sign; `∞` is not a real value. This makes the requested value-group conclusion explicit rather than changing the valuation formula. |
 | 60 | Use associated primes of `R/I` and prime height. | The unit ideal has no associated primes in its quotient module and remains invertible. The zero ideal over a field has an associated prime of height zero and is excluded. `dim(R/p)` is not used as a substitute for `height(p)`. |
 | 63 | Require the map `S' → S` to be surjective. | Square-zero kernel and the universal lifting property are retained. The constant-map shortcut to a polynomial algebra is not surjective and no longer meets the conclusion. |
+| 70 | Replace `NoZeroSMulDivisors R S` with injectivity of `algebraMap R S`. | An embedding need not make S torsion free as an R-module. The regression proves the intended minimal-prime contraction statement from injectivity alone using Mathlib. |
+| 74 | Require the regular sequence to have length equal to `dim R`. | Without this hypothesis a length-two sequence in a three-dimensional regular local ring gives a colon quotient of type two. The corrected case reduces to an Artinian Gorenstein quotient. |
 | 75 | Use the ordinary prime localization. | The degree-zero homogeneous localization does not test the affine-cone vertex. Ordinary localization retains it and gives the criterion discussed in issue #1; the informal statement is updated as well. |
 | 81 | Parenthesize the existential only on the left of the equivalence. | The statement asserts both directions of the intended criterion. The existing proper-ideal hypothesis is retained and made explicit in the informal statement. |
+| 86 | Restrict the dimension inequality to one-dimensional rings. | The unrestricted assertion is refuted by `tests/Problem86Counterexample.lean`. The dimension-one replacement is consistent with the cutoff sequences of problem 92. |
 | 92 | Quantify over `ℕ∞` in the realization direction too. | Both directions now include the sequence for the infinite cutoff, namely `a_n = 2n+1` for every n. |
 | 96 | Exclude actual poles instead of zero orbit values. | The denominator is nonzero at every iterate. A polynomial orbit starting at zero satisfies this guard, and the conclusion remains about the second iterate `f ∘ f`. |
 
@@ -27,6 +32,39 @@ For problem 63, the corrected statement also agrees directly with the universal
 first-order thickening in [Stacks, Lemma 10.149.1](https://stacks.math.columbia.edu/tag/04EB).
 
 ## Details of the larger changes
+
+### Problems 70, 74, and 86: subsequent review
+
+Problem 70 only needs an embedding of R into S. Torsion freeness discards the
+case in which nonzero elements of R become zero divisors in S. Even with this
+corrected scope, the task is a short application of Mathlib's
+`Ideal.exists_minimalPrimes_comap_eq`; the independent regression proves a stronger
+statement without the local and Noetherian assumptions. The correction restores
+the right scope, but does not make it a difficult benchmark task.
+
+For problem 74, over the rationals take the regular local ring at `(a,b,c)` and
+the regular sequence `(ab,(a+b)c)`, with `y=a+2b`. Gröbner elimination gives
+`((ab,(a+b)c):y)=(ab,ac,bc)`. The quotient is one-dimensional Cohen--Macaulay;
+reducing by the regular element `a+b+c` gives `Q[a,b]/(a²,ab,b²)`, with socle
+spanned by a and b. Its type is two, so the original conclusion is false.
+The socle computation was independently checked by multiplication matrices and
+ideal quotients; this is not a Lean counterexample proof. Requiring `length = dim R`
+makes the regular-sequence quotient Artinian Gorenstein. Its quotient by the
+annihilator of a nonzero element is again Artinian Gorenstein, yielding the
+intended corrected statement. The typo in “Prove” is fixed as well.
+
+For problem 86, the reviewer-supplied standalone Lean file constructs
+`A = D × Q[s,t]`, with `D = Q + t L[[t]]` and `L = Q(u,v)`. It proves the bounds
+`dim A ≥ 2`, `dim A[X,Y] ≥ 5`, and `dim A[X] ≤ 3`, sufficient to force `7 ≤ 6`
+from the original inequality. No further exact-dimension claims are needed.
+The file was independently recompiled against the pinned toolchain;
+`V86.problem86_false` depends only on `propext`, `Classical.choice`, and `Quot.sound`.
+
+The new dimension-one condition in 86 is an explicit restriction of the task.
+Two independent regressions prove concavity for every cutoff sequence in problem
+92, including the infinite cutoff, and derive the ring-dimension inequality when
+that sequence characterization is supplied as a hypothesis. They do not invoke
+problem 92's unproved benchmark theorem.
 
 ### Problem 15
 
@@ -88,7 +126,8 @@ python3 tests/check_statements.py
 
 The checker compares all 100 JSON formal statements with the Lean files, verifies
 one benchmark proof hole per problem, elaborates all 100 modules and their
-aggregate, then checks `tests/StatementCorrections.lean`. It uses at most three
+aggregate, then checks `tests/StatementCorrections.lean` and the standalone
+`tests/Problem86Counterexample.lean` refutation. It uses at most three
 concurrent module compilations and writes all logs under `.work/statement-checks/`.
 
 The regression file checks the repaired interfaces with independent proofs and
@@ -96,7 +135,7 @@ prints their axiom dependencies. The checker rejects a `sorryAx` dependency in
 those regression proofs. Importing a task module does not count as proving that task.
 
 Compilation verifies that the statements are well formed. It does not certify
-the full mathematical theorem in each of the thirteen benchmark problems.
+the full mathematical theorem in each of the sixteen benchmark problems.
 
 The existing PDF is retained as the original edition; the corrected Lean and JSON
 are the current statement sources for the changed problems.

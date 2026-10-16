@@ -73,10 +73,13 @@ if __name__ == "__main__":
     if passed:
         report["aggregate"] = check_file("FATEX.lean", LIB / "FATEX.olean")
         report["regressions"] = check_file("tests/StatementCorrections.lean")
-        passed = report["aggregate"]["returncode"] == 0 and report["regressions"]["returncode"] == 0
+        report["original86_refutation"] = check_file("tests/Problem86Counterexample.lean")
+        passed = (report["aggregate"]["returncode"] == 0 and report["regressions"]["returncode"] == 0
+                  and report["original86_refutation"]["returncode"] == 0)
         if passed:
             output = (ROOT / report["regressions"]["log"]).read_text()
-            passed = "sorryAx" not in output
+            refutation = (ROOT / report["original86_refutation"]["log"]).read_text()
+            passed = "sorryAx" not in output and "sorryAx" not in refutation
             report["regression_proofs_closed"] = passed
     (WORK / "results.json").write_text(json.dumps(report, indent=2) + "\n")
     sys.exit(0 if passed else 1)

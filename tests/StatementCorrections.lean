@@ -6,6 +6,10 @@ import FATEX.«23»
 import FATEX.«45»
 import FATEX.«60»
 import FATEX.«63»
+import FATEX.«70»
+import FATEX.«74»
+import FATEX.«86»
+import FATEX.«92»
 import FATEX.«96»
 
 namespace CorrectedFatexChecks
@@ -130,6 +134,53 @@ theorem zero_is_allowed_when_not_a_pole :
   · intro h
     exact h 0 (by simp)
 
+/-- The repaired problem 70 needs only an embedding. In fact Mathlib proves this
+without the extra local/Noetherian assumptions retained by the task. -/
+theorem minimal_prime_contraction_of_embedding (R S : Type) [CommRing R] [IsDomain R]
+    [CommRing S] [Algebra R S] (hinj : Function.Injective (algebraMap R S)) :
+    ∃ p : minimalPrimes S, Ideal.comap (algebraMap R S) p.val = ⊥ := by
+  have hzero : (⊥ : Ideal R) ∈ ((⊥ : Ideal S).comap (algebraMap R S)).minimalPrimes := by
+    rw [Ideal.comap_bot_of_injective (algebraMap R S) hinj]
+    refine ⟨⟨inferInstance, le_rfl⟩, ?_⟩
+    intro q _ _
+    exact bot_le
+  obtain ⟨p, hp, heq⟩ := Ideal.exists_minimalPrimes_comap_eq (I := (⊥ : Ideal S))
+    (algebraMap R S) ⊥ hzero
+  exact ⟨⟨p, hp⟩, heq⟩
+
+/-- All one-dimensional cutoff sequences in problem 92 satisfy the inequality
+used by the corrected problem 86, including the infinite cutoff. -/
+theorem first_dimension_steps_concave (k : ℕ∞) :
+    Problem92.a k 2 + 1 ≤ 2 * Problem92.a k 1 := by
+  rcases eq_or_ne k ⊤ with rfl | hk
+  · simp [Problem92.a]
+  lift k to ℕ using hk with n
+  by_cases h0 : n = 0
+  · subst n
+    norm_num [Problem92.a]
+  by_cases h1 : n = 1
+  · subst n
+    norm_num [Problem92.a]
+  have hn2 : (2 : ℕ∞) ≤ (n : ℕ∞) := by exact_mod_cast (by omega : 2 ≤ n)
+  have hn1 : (1 : ℕ∞) ≤ (n : ℕ∞) := le_trans (by decide) hn2
+  simp [Problem92.a, hn1, hn2]
+
+/-- This derives problem 86 from the dimension-sequence characterization, supplied
+as a hypothesis: it does not invoke the benchmark's unproved problem 92. -/
+theorem dimension_inequality_of_cutoff_sequence (A : Type) [CommRing A]
+    (h : ringKrullDim A = 1) (k : ℕ∞)
+    (hseq : ∀ n : ℕ, ringKrullDim (MvPolynomial (Fin n) A) = Problem92.a k n) :
+    ringKrullDim (MvPolynomial (Fin 2) A) + ringKrullDim A ≤
+      2 * ringKrullDim (Polynomial A) := by
+  have hpoly : ringKrullDim (Polynomial A) = Problem92.a k 1 := by
+    let e : MvPolynomial (Fin 1) A ≃ₐ[A] Polynomial A :=
+      (MvPolynomial.renameEquiv A (Equiv.ofUnique (Fin 1) PUnit.{1})).trans
+        (MvPolynomial.pUnitAlgEquiv A)
+    rw [← ringKrullDim_eq_of_ringEquiv e.toRingEquiv]
+    exact hseq 1
+  rw [hseq 2, h, hpoly]
+  exact_mod_cast first_dimension_steps_concave k
+
 #print axioms simple_group_has_minimal_nontrivial_normal
 #print axioms nondivision_has_nonzero_nonunit
 #print axioms prime_cyclic_series_exists
@@ -140,5 +191,8 @@ theorem zero_is_allowed_when_not_a_pole :
 #print axioms constant_map_is_not_surjective
 #print axioms nonzero_regular_module_is_admitted
 #print axioms zero_is_allowed_when_not_a_pole
+#print axioms minimal_prime_contraction_of_embedding
+#print axioms first_dimension_steps_concave
+#print axioms dimension_inequality_of_cutoff_sequence
 
 end CorrectedFatexChecks

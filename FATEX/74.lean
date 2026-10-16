@@ -33,12 +33,13 @@ class IsGorensteinRing (R : Type) [CommRing R] : Prop extends IsNoetherianRing R
 variable {R : Type} [CommRing R]
 
 /--
-Let $R$ be a regular local ring and let $x_1, \dots, x_c$ be a regular sequence in $R$.
-Let $y \in R$, $y \notin (x_1, \dots, x_c)$, and set $J := ((x_1, \dots, x_c) : y)$. P
-rove that $R/J$ is Gorenstein.
+Let $R$ be a regular local ring of dimension $c$, and let $x_1, \dots, x_c$ be a
+regular sequence in $R$. Let $y \in R$, $y \notin (x_1, \dots, x_c)$, and set
+$J := ((x_1, \dots, x_c) : y)$. Prove that $R/J$ is Gorenstein.
 -/
 theorem IsRegularLocalRing.gorensteinAtRegularSequence {R : Type} [CommRing R]
     [IsRegularLocalRing R] {rs : List R} (reg : RingTheory.Sequence.IsRegular R rs) (y : R)
+    (hlen : (rs.length : WithBot ℕ∞) = ringKrullDim R)
     (h : y ∉ Ideal.ofList rs) : IsGorensteinRing (R ⧸ (Ideal.ofList rs / Ideal.span {y})) := by
   sorry
 
